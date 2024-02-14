@@ -4,9 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def im2vid(img,duration,fps=30):
-    return Video([img]*duration*fps,fps=fps)
-
 class Video:
     def __init__(self,video,fps):
         self.fps = fps
@@ -15,10 +12,13 @@ class Video:
         self.check_shape()
     
     def __str__(self):
-        return f"Frame shape(h,w):{self.shape}, Num_frame:{len(self.video)}, FPS:{self.fps}, Duration:{len(self.video)/self.fps} Sec"
+        return f"Frame shape(h,w):{self.shape}, Num_frames:{len(self)}, FPS:{self.fps}, Duration:{len(self)/self.fps} Sec"
     
     def __repr__(self):
         return self.__str__()
+    
+    def __len__(self):
+        return len(self.video)
     
     def __setitem__(self,idx,value):
         target_idx = []
@@ -27,21 +27,21 @@ class Video:
                 target_idx.append(i)
         elif isinstance(idx,slice):
             start = 0 if idx.start is None else idx.start
-            stop = len(self.video) if idx.stop is None else idx.stop
+            stop = len(self) if idx.stop is None else idx.stop
             step = 1 if idx.step is None else idx.step
 
-            if start<0: start = max(start + len(self.video),0)
-            if stop<0: stop = max(stop + len(self.video),0)
+            if start<0: start = max(start + len(self),0)
+            if stop<0: stop = max(stop + len(self),0)
 
-            start = min(len(self.video),start)
-            stop = min(len(self.video),stop)
+            start = min(len(self),start)
+            stop = min(len(self),stop)
 
             target_idx.extend(list(range(start,stop,step)))
         else:
             target_idx = [idx]
         
         assert isinstance(value,Video), "Video 클래스가 아닙니다."
-        assert len(target_idx) == len(value.video), "크기가 다릅니다."
+        assert len(target_idx) == len(value), "크기가 다릅니다."
 
         for i,v in zip(target_idx,value.resize(self.shape).video):
             self.video[i] = v
@@ -77,7 +77,7 @@ class Video:
             step = other.fps / self.fps
             ret = self.copy()
             idx = 0.0
-            while(idx<len(other.video)):
+            while(idx<len(other)):
                 ret.video.append(other.video[int(idx)])
                 idx = idx + step
         else :
@@ -102,13 +102,12 @@ class Video:
         h, w = shape
         for i,frame in enumerate(self.video):
             self.video[i] = cv2.resize(frame,(w,h))
-            #self.video[i] = cv2.resize(frame,tuple(reversed(shape))) # cv2는 (w,h) 형태이기 때문에 reversed후 reshape해야함
         self.shape = self.video[0].shape[:2]
         return self
     
     def pad(self,shape,color=(0,0,0),xy=None):
         h, w = shape
-        ret = [np.full((h,w,3),color,dtype=np.uint8)]*len(self.video)
+        ret = [np.full((h,w,3),color,dtype=np.uint8)]*len(self)
 
         if xy is None:
             x1,y1 = int((w-self.shape[1])/2), int((h-self.shape[0])/2)
@@ -122,38 +121,45 @@ class Video:
 
         return self
     
-    def show(self,idx1=0,idx2=None,step=None,figsize=(5,5)):
-        ret = []
-        if idx2 is None:
-            if isinstance(idx1,list):
-                for i in idx1:
-                    ret.append(self.video[i])
-            elif type(idx1)== int : 
-                ret.append(self.video[idx1])
-            else :
-                assert False, "인덱스는 Integer, List 형식이 되어야 합니다."
-        else :
-            if idx2<0: idx2 = max(idx2 + len(self.video),0)
-
-            idx2 = min(len(self.video)-1,idx2)
-            step = 1 if step is None else step
-                
-            for i in range(idx1,idx2+1):
-                ret.append(self.video[i])
-
-        plt.figure(figsize=figsize)
+    def show(self):
+        global playing
+        playing = True 
+        title = self.__str__()
+        def on_trackbar(pos):
+            cv2.imshow(title, self.video[pos])
         
-        for i, v in enumerate(ret):
-            plt.subplot(1,len(ret),i+1)
-            plt.axis('off')
-            plt.imshow(cv2.cvtColor(v,cv2.COLOR_BGR2RGB))
-        plt.show()
-        
-        
+        def on_space_press():
+            global playing
+            if cv2.getTrackbarPos('Frame', title) == len(self)-1:
+                cv2.setTrackbarPos('Frame', title, 0)
+            playing = not playing              
 
+        cv2.namedWindow(title, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(title,450,800)
+        cv2.createTrackbar('Frame', title, 0, len(self) - 1, on_trackbar)
+        
+        cv2.imshow(title, self.video[0])
+        
+        while True:
+
+            key = cv2.waitKey(30)
+            if key == 32:  # 스페이스바를 누르면 재생/일시정지
+                on_space_press()
+            elif key == 27:  # ESC를 누르면 종료
+                break
+
+            if playing:        
+                if cv2.getTrackbarPos('Frame', title) < len(self)-1:
+                    cv2.setTrackbarPos('Frame', title, cv2.getTrackbarPos('Frame', title)+1)
+                else : 
+                    playing = False
+
+        cv2.destroyAllWindows()
+        return True
+    
     def save(self,path):
         self.check_shape()
         out = cv2.VideoWriter(path,cv2.VideoWriter_fourcc(*'DIVX'), self.fps, (self.shape[1],self.shape[0]))
-        for i in range(len(self.video)):
+        for i in range(len(self)):
             out.write(self.video[i])
         out.release()
