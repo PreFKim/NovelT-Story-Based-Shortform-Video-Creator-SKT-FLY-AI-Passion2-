@@ -8,6 +8,18 @@ def im2vid(img,num_frames,fps=30):
         img = cv2.imread(img)
     return Video([img]*num_frames,fps=fps)
 
+def read_video(path):
+    video = []
+    cap = cv2.VideoCapture(path)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    while(True):
+        ret,frame = cap.read()
+        if ret == False: break
+        video.append(frame)
+    cap.release()
+    return Video(video=video,fps=fps)
+    
+
 def put_text(video,text,start_frame,end_frame,fontsize=12,color=(0,0,0),center_xy=None):
     ret = video.copy()
     h,w = video.shape
