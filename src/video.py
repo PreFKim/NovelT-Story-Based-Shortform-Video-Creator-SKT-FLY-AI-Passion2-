@@ -59,31 +59,15 @@ class Video:
 
     def __add__(self,other):
         assert isinstance(other,Video), "Video 클래스가 아닙니다."
-        
+        ret = self.copy()
         other = other.copy()
+
         if (self.shape != other.shape):
             other.resize(self.shape)
 
-        if (self.fps > other.fps):
-            rest = self.fps % other.fps
-            repeat = self.fps // other.fps
-            ret = self.copy()
-
-            for v in other.video:
-                for _ in range(repeat+ int(rest>0)):
-                    ret.video.append(v)
-                rest = rest - 1 
-
-        elif (self.fps < other.fps):
-            step = other.fps / self.fps
-            ret = self.copy()
-            idx = 0.0
-            while(idx<len(other)):
-                ret.video.append(other.video[int(idx)])
-                idx = idx + step
-        else :
-            ret = Video(video = self.video + other.video,fps=self.fps)
-
+        if (self.fps != other.fps):
+            other.set_fps(self.fps)
+        ret.video = ret.video + other.video
         return ret
             
     def copy(self):
@@ -122,6 +106,31 @@ class Video:
 
         return self
     
+    def set_fps(self,fps):
+        video = []
+        if (self.fps > fps):
+            step = int(self.fps // fps)
+            idx = 0.0
+            while(idx<len(self)):
+                video.append(self.video[int(idx)])
+                idx = idx + step
+        elif (self.fps < fps):
+            rest = int(fps % self.fps)
+            repeat = int(fps // self.fps)
+            
+            for v in self.video:
+                for _ in range(repeat+ int(rest>0)):
+                    video.append(v)
+                rest = rest - 1 
+            
+        else :
+            video = self.video
+
+        self.video = video
+        self.fps = fps
+        return self
+        
+    
     def show(self):
         global playing
         playing = True 
@@ -144,18 +153,18 @@ class Video:
         prev_time = 0
         while True:
             current_time = time.time() - prev_time
-            key = cv2.waitKey(30)
+
+            if playing and (current_time > 1./ self.fps) :
+                if cv2.getTrackbarPos('Frame', title) < len(self)-1:
+                    prev_time = time.time()-0.001
+                    cv2.setTrackbarPos('Frame', title, cv2.getTrackbarPos('Frame', title)+1)
+                else : 
+                    playing = False
+            key = cv2.waitKey(1)
             if key == 32:  # 스페이스바를 누르면 재생/일시정지
                 on_space_press()
             elif key == 27:  # ESC를 누르면 종료
                 break
-
-            if playing and (current_time > 1./ self.fps) :
-                if cv2.getTrackbarPos('Frame', title) < len(self)-1:
-                    prev_time = time.time()
-                    cv2.setTrackbarPos('Frame', title, cv2.getTrackbarPos('Frame', title)+1)
-                else : 
-                    playing = False
     	
                 
                 
