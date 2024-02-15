@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 class Video:
-    def __init__(self,video,fps):
+    def __init__(self,video:list,fps:float):
         self.fps = fps
         self.video = video
         self.shape = (video[0].shape[:2])
@@ -52,10 +52,11 @@ class Video:
             ret = []
             for i in idx:
                 ret.append(self.video[i])
-            return Video(video=ret,fps=self.fps)
-        else:
+        elif isinstance(idx,slice):
             ret = self.video[idx]
-            return Video(video=ret,fps=self.fps)
+        else :
+            ret = [self.video[idx]]
+        return Video(video=ret,fps=self.fps)
 
     def __add__(self,other):
         assert isinstance(other,Video), "Video 클래스가 아닙니다."
@@ -90,9 +91,9 @@ class Video:
         self.shape = self.video[0].shape[:2]
         return self
     
-    def pad(self,shape,color=(0,0,0),xy=None):
+    def pad(self,shape,color:tuple=(0,0,0),xy:tuple=None):
         h, w = shape
-        ret = [np.full((h,w,3),color,dtype=np.uint8)]*len(self)
+        ret = [np.full((h,w,3),color,dtype=np.uint8) for _ in range(len(self))]
 
         if xy is None:
             x1,y1 = int((w-self.shape[1])/2), int((h-self.shape[0])/2)
@@ -106,7 +107,7 @@ class Video:
 
         return self
     
-    def set_fps(self,fps):
+    def set_fps(self,fps:float):
         video = []
         if (self.fps > fps):
             step = int(self.fps // fps)
@@ -165,14 +166,11 @@ class Video:
                 on_space_press()
             elif key == 27:  # ESC를 누르면 종료
                 break
-    	
-                
-                
 
         cv2.destroyAllWindows()
         return True
     
-    def save(self,path):
+    def save(self,path:str):
         self.check_shape()
         out = cv2.VideoWriter(path,cv2.VideoWriter_fourcc(*'DIVX'), self.fps, (self.shape[1],self.shape[0]))
         for i in range(len(self)):
