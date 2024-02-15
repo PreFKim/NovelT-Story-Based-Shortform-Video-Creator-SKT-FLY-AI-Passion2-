@@ -3,12 +3,12 @@ from PIL import Image, ImageFont, ImageDraw
 import numpy as np
 from .video import Video
 
-def im2vid(img,num_frames,fps=30):
+def im2vid(img,num_frames:int,fps=60):
     if isinstance(img,str):
         img = cv2.imread(img)
-    return Video([img]*num_frames,fps=fps)
+    return Video([img for _ in range(num_frames)],fps=fps)
 
-def read_video(path):
+def read_video(path:str):
     video = []
     cap = cv2.VideoCapture(path)
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -20,7 +20,7 @@ def read_video(path):
     return Video(video=video,fps=fps)
     
 
-def put_text(video,text,start_frame,end_frame,fontsize=12,color=(0,0,0),center_xy=None):
+def put_text(video:Video,text:str,start_frame:int,end_frame:int,fontsize=12,color:tuple=(0,0,0),center_xy:tuple=None):
     ret = video.copy()
     h,w = video.shape
 
@@ -40,16 +40,21 @@ def put_text(video,text,start_frame,end_frame,fontsize=12,color=(0,0,0),center_x
         ret.video[i] = np.array(img_pillow,dtype=np.uint8)
     return ret
 
-def full(shape,num_frames,color=(0,0,0),fps=30):
-    h,w = shape
-    return Video(video=[np.full((h,w,3),color,dtype=np.uint8)]*num_frames,fps=fps)
+def set_fps(video:Video,fps:float=60):
+    ret = video.copy()
+    ret.set_fps(fps)
+    return ret
 
-def pad(video,shape,color=(0,0,0),xy=None):
+def full(shape,num_frames:int,color:tuple=(0,0,0),fps:float=60):
+    h,w = shape
+    return Video(video=[np.full((h,w,3),color,dtype=np.uint8) for _ in range(num_frames)],fps=fps)
+
+def pad(video:Video,shape,color:tuple=(0,0,0),xy:tuple=None):
     ret = video.copy()
     ret.pad(shape=shape,color=color,xy=xy)
     return ret
 
-def resize(video,shape):
+def resize(video:Video,shape):
     ret = video.copy()
     ret.resize(shape=shape)
     return ret
