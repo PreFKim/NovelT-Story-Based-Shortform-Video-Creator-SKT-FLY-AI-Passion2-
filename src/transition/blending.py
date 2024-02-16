@@ -16,7 +16,7 @@ class Blending(Transition):
             alpha = 0
             transition = full(inputs[0].shape,self.num_frames,fps=inputs[0].fps)
             for j in range(self.num_frames):
-                transition.video[j] = cv2.addWeighted(inputs[i-1].video[j],1-alpha,inputs[i].video[j],alpha,self.gamma)
+                transition.video[j] = cv2.addWeighted(inputs[i-1].video[-(j+1)],1-alpha,inputs[i].video[j],alpha,self.gamma)
                 alpha = alpha + d
             ret = ret + transition + inputs[i]
 
