@@ -15,38 +15,44 @@ class Slide(Transition):
 
         ret = inputs[0]
 
-
         for i in range(1,len(inputs)):
-            mode = int(random.uniform(0,4)) if self.mode==-1 else self.mode
+            mode = random.randint(0,3) if self.mode==-1 else self.mode
             transition = full(inputs[0].shape,self.num_frames,fps=inputs[0].fps)
             if mode == 0:
                 d = -h/self.num_frames
                 border = h-1
                 for j in range(self.num_frames):
-                    transition.video[j][:int(border)] = inputs[i-1].video[-(j+1)][-int(border):]
-                    transition.video[j][int(border):] = inputs[i].video[j][:-int(border)]
+                    # transition.video[j][:int(border)] = inputs[i-1].video[-(j+1)][-int(border):]
+                    # transition.video[j][int(border):] = inputs[i].video[j][:-int(border)]
+                    transition.video[j][:int(border)] = inputs[i-1].video[-1][-int(border):]
+                    transition.video[j][int(border):] = inputs[i].video[0][:-int(border)]
                     border = border + d
             elif mode == 1:
                 d = h/self.num_frames
                 border = 1
                 for j in range(self.num_frames):
-                    transition.video[j][int(border):] = inputs[i-1].video[-(j+1)][:-int(border)]
-                    transition.video[j][:int(border)] = inputs[i].video[j][-int(border):]
+                    # transition.video[j][int(border):] = inputs[i-1].video[-(j+1)][:-int(border)]
+                    # transition.video[j][:int(border)] = inputs[i].video[j][-int(border):]
+                    transition.video[j][int(border):] = inputs[i-1].video[-1][:-int(border)]
+                    transition.video[j][:int(border)] = inputs[i].video[0][-int(border):]
                     border = border + d
             elif mode == 2:
                 d = -w/self.num_frames
                 border = w-1
                 for j in range(self.num_frames):
-
-                    transition.video[j][:,:int(border)] = inputs[i-1].video[-(j+1)][:,-int(border):]
-                    transition.video[j][:,int(border):] = inputs[i].video[j][:,:-int(border)]
+                    # transition.video[j][:,:int(border)] = inputs[i-1].video[-(j+1)][:,-int(border):]
+                    # transition.video[j][:,int(border):] = inputs[i].video[j][:,:-int(border)]
+                    transition.video[j][:,:int(border)] = inputs[i-1].video[-1][:,-int(border):]
+                    transition.video[j][:,int(border):] = inputs[i].video[0][:,:-int(border)]
                     border = border + d
             elif mode == 3:
                 d = w/self.num_frames
                 border = 1
                 for j in range(self.num_frames):
-                    transition.video[j][:,int(border):] = inputs[i-1].video[-(j+1)][:,:-int(border)]
-                    transition.video[j][:,:int(border)] = inputs[i].video[j][:,-int(border):]
+                    # transition.video[j][:,int(border):] = inputs[i-1].video[-(j+1)][:,:-int(border)]
+                    # transition.video[j][:,:int(border)] = inputs[i].video[j][:,-int(border):]
+                    transition.video[j][:,int(border):] = inputs[i-1].video[-1][:,:-int(border)]
+                    transition.video[j][:,:int(border)] = inputs[i].video[0][:,-int(border):]
                     border = border + d
             ret = ret + transition + inputs[i]
 

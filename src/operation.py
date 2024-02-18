@@ -18,10 +18,12 @@ def read_video(path:str):
         video.append(frame)
     cap.release()
     return Video(video=video,fps=fps)
-    
+
+def save(video:Video,path:str):
+    return video.save(path)
 
 def put_text(video:Video,text:str,start_frame:int=0,end_frame:int=None,fontsize=12,color:tuple=(0,0,0),center_xy:tuple=None,bg_color:tuple=None):
-    ret = video.copy()
+    ret = video
     h,w = video.shape
 
     start_frame = 0 if start_frame is None else start_frame

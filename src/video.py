@@ -2,7 +2,7 @@
 import cv2
 import time
 import numpy as np
-import matplotlib.pyplot as plt
+import tqdm
 
 
 class Video:
@@ -166,13 +166,13 @@ class Video:
                 on_space_press()
             elif key == 27:  # ESC를 누르면 종료
                 break
-
         cv2.destroyAllWindows()
         return True
     
     def save(self,path:str):
         self.check_shape()
         out = cv2.VideoWriter(path,cv2.VideoWriter_fourcc(*'DIVX'), self.fps, (self.shape[1],self.shape[0]))
-        for i in range(len(self)):
+        for i in tqdm.tqdm(range(len(self)),desc=f"Saving Video({path})"):
             out.write(self.video[i])
         out.release()
+        return True
