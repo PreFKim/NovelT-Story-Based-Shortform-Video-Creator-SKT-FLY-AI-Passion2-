@@ -11,7 +11,7 @@ class Subtitle(Effect):
         self.bg_color = bg_color
         self.fontsize = fontsize
         
-    def effect(self,video:Video):
+    def effect(self,video:Video,start_frame:int,end_frame:int):
 
         h, w = video.shape
 
@@ -20,7 +20,7 @@ class Subtitle(Effect):
         else :
             fontsize = self.fontsize
         
-        return put_text(video,self.text,self.start_frame,self.end_frame,fontsize=fontsize,color=self.color,center_xy=(w/2,h*self.h_ratio),bg_color=self.bg_color)
+        return put_text(video,self.text,start_frame,end_frame,fontsize=fontsize,color=self.color,center_xy=(w/2,h*self.h_ratio),bg_color=self.bg_color)
 
 class Narration(Effect):
     def __init__(self,text, start_frame:int=0, end_frame:int=None, fontsize:int=None, color=(255,255,255), bg_color=(0,0,0)):
@@ -30,7 +30,7 @@ class Narration(Effect):
         self.bg_color = bg_color
         self.fontsize = fontsize
         
-    def effect(self,video:Video):
+    def effect(self,video:Video,start_frame:int,end_frame:int):
 
         h, w = video.shape
 
@@ -39,6 +39,6 @@ class Narration(Effect):
         else :
             fontsize = self.fontsize
 
-        video[self.start_frame:self.end_frame] = put_text(full(video.shape,self.end_frame-self.start_frame,color=self.bg_color),self.text,fontsize=fontsize,color=self.color)
+        video[start_frame:end_frame] = put_text(full(video.shape,end_frame-start_frame,color=self.bg_color),self.text,fontsize=fontsize,color=self.color)
         
         return video

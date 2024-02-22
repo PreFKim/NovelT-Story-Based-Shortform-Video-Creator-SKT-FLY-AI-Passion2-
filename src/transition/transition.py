@@ -4,16 +4,15 @@ class Transition:
     def __init__(self,num_frames:int=60):
         self.num_frames = num_frames
 
-    def __call__(self,inputs:list):
+    def __call__(self,x1,x2):
 
-        for i in range(len(inputs)):
+        if (x1.shape != x2.shape):
+            x2 = resize(x2,x1.shape)
+        
+        if (x1.fps != x2.fps):
+            x2 = set_fps(x2,x1.fps)
 
-            if i >= 1:
-                if (inputs[0].shape != inputs[i].shape):
-                    inputs[i] = resize(inputs[i],inputs[0].shape)
-                
-                if (inputs[0].fps != inputs[i].fps):
-                    inputs[i] = set_fps(inputs[i],inputs[0].fps)
-
-        return self.effect(inputs)
+        ret = self.effect(x1,x2)
+        return ret
+        
 

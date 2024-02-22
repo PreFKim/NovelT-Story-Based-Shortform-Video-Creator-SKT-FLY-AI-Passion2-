@@ -10,7 +10,7 @@ class Zoom_in(Effect):
         self.xywh = xywh
         self.exp = exp
         
-    def effect(self,video:Video):
+    def effect(self,video:Video,start_frame:int,end_frame:int):
         h,w = video.shape
 
         
@@ -22,9 +22,9 @@ class Zoom_in(Effect):
         else : 
             to_xywh = np.array(self.xywh) / [w,h,w,h]
 
-        dxy = (from_xywh-to_xywh)/(self.end_frame-self.start_frame)
+        dxy = (from_xywh-to_xywh)/(end_frame-start_frame)
         lst = [from_xywh]
-        for i in range(self.end_frame-self.start_frame-1):
+        for i in range(end_frame-start_frame-1):
             lst.append(lst[-1]-dxy)
         lst = np.array(lst)
         lst[:,[0,2]] = lst[:,[0,2]] * rw
@@ -34,8 +34,8 @@ class Zoom_in(Effect):
             resized = cv2.resize(video.video[i],(rw,rh))
             crop = resized[lst[i][1]:lst[i][1]+lst[i][3],lst[i][0]:lst[i][0]+lst[i][2]]
             video.video[i] = cv2.resize(crop,(w,h))
-        for i in range(self.end_frame,len(video)):
-            video.video[i] = video.video[self.end_frame-1].copy()
+        for i in range(end_frame,len(video)):
+            video.video[i] = video.video[end_frame-1].copy()
         
         return video
 
@@ -46,7 +46,7 @@ class Zoom_out(Effect):
         self.xywh = xywh
         self.exp = exp
         
-    def effect(self,video:Video):
+    def effect(self,video:Video,start_frame:int,end_frame:int):
         h,w = video.shape
 
         
@@ -57,9 +57,9 @@ class Zoom_out(Effect):
             from_xywh = np.array(self.xywh) / [w,h,w,h]
         to_xywh = np.array([0,0,1,1]) # x, y ,w ,h
 
-        dxy = (from_xywh-to_xywh)/(self.end_frame-self.start_frame)
+        dxy = (from_xywh-to_xywh)/(end_frame-start_frame)
         lst = [from_xywh]
-        for i in range(self.end_frame-self.start_frame-1):
+        for i in range(end_frame-start_frame-1):
             lst.append(lst[-1]-dxy)
         lst = np.array(lst)
         lst[:,[0,2]] = lst[:,[0,2]] * rw
@@ -69,7 +69,7 @@ class Zoom_out(Effect):
             resized = cv2.resize(video.video[i],(rw,rh))
             crop = resized[lst[i][1]:lst[i][1]+lst[i][3],lst[i][0]:lst[i][0]+lst[i][2]]
             video.video[i] = cv2.resize(crop,(w,h))
-        for i in range(self.end_frame,len(video)):
-            video.video[i] = video.video[self.end_frame-1].copy()
+        for i in range(end_frame,len(video)):
+            video.video[i] = video.video[end_frame-1].copy()
         
         return video

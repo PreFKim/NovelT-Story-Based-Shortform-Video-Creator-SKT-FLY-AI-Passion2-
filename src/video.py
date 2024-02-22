@@ -169,10 +169,5 @@ class Video:
         cv2.destroyAllWindows()
         return True
     
-    def save(self,path:str):
-        self.check_shape()
-        out = cv2.VideoWriter(path,cv2.VideoWriter_fourcc(*'DIVX'), self.fps, (self.shape[1],self.shape[0]))
-        for i in tqdm.tqdm(range(len(self)),desc=f"Saving Video({path})"):
-            out.write(self.video[i])
-        out.release()
-        return True
+
+    
