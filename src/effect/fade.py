@@ -35,7 +35,7 @@ class Fade_out(Effect):
 
         ratio = (3/(end_frame-start_frame))*2
         for i in reversed(range(len(video))):
-            video.video[i] = (video.video[i]*np.reshape(gaussian(X, Y, 0, 0, i*ratio, i*ratio),(h,w,1))).astype(np.uint8)
+            video.video[-(i+1)] = (video.video[-(i+1)]*np.reshape(gaussian(X, Y, 0, 0, i*ratio, i*ratio),(h,w,1))).astype(np.uint8)
         
         return video
 
