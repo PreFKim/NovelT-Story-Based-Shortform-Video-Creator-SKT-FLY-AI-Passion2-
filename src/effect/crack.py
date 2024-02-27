@@ -11,9 +11,9 @@ def crack_effect(img,from_x,from_y):
     if (from_y<h):
 
         if from_y > 0.5:
-            n = random.choices([1,2],[0.8,0.2])[0] 
-        else : 
             n = random.choices([1,2],[0.9,0.1])[0] 
+        else : 
+            n = random.choices([1,2],[0.95,0.05])[0] 
 
         for _ in range(n):
             to_x = from_x + int(np.random.uniform(-w*0.15,w*0.15))
