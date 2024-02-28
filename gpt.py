@@ -6,7 +6,7 @@ from config import *
 
 tasks = ['작업 1. 너에게 웹소설의 정보를 제공을 해 줄 거야. 이 정보를 기반으로 유튜브 쇼츠에 적합하도록 줄거리를 기반으로 씬을 나누어주었으면 좋겠어.\n\n5개의 씬으로 나눠주고 씬별로 3개의 자연스럽고 자극적인 나레이션을 한 문장으로 작성해줘.\n\n출력 예시:\n1. 씬 제목\n- 나레이션 : 나레이션 내용\n- 나레이션 : ...',
  '작업 2. 작업 1의 모든 나레이션에 대해서 사용자의 입력을 반영하여 해당 내용을 잘 설명하는 장면 내용을 만들어줘.\n\n1. 씬 제목\n- 장면내용 : 진실을 마주한 두 사람이 서로를 바라본다.\n- ...',
- "작업 3. 모든 장면 속 내용에 대해서 쇼츠에 적합하도록 '영상 이펙트'를 정해줘.\n\n영상 이펙트의 종류는 다음과 같아\n- 없음\n- 페이드 인/ 아웃\n- 줌 인/ 아웃\n- 눈 깜빡임 효과\n- 갈라짐 효과\n- 배경 없이 나레이션만\n\n출력 예시:\n장면제목\n- 이펙트 : 줌 인\n- ...",
+ "작업 3. 모든 장면 속 내용에 대해서 쇼츠에 적합하도록 '영상 이펙트'를 하나씩만 정해줘.\n\n영상 이펙트의 종류는 다음과 같아\n- 없음\n- 페이드 인/ 아웃\n- 줌 인/ 아웃\n- 눈 깜빡임 효과\n- 갈라짐 효과\n- 떨림 효과\n- 배경 없이 나레이션만\n\n출력 예시:\n장면제목\n- 이펙트 : 줌 인\n- ...",
  "작업 4. 작업 2에서 생성한 장면의 내용들을 반영해 해당 장면을 자세하게 잘 설명할 수 있는 이미지를 생성하도록 장면별로 DALL-E의 입력으로 할 '영어 프롬프트'만을 자세하게 작성해줘.\n\n프롬프트에는 꼭 인물의 이름을 명시해줬으면 좋겠어\n\n출력 예시:\n1. 씬 제목\n- 프롬프트 : 프롬프트 내용\n- ...",
  '작업 5. 인물들의 정보(나이, 외모, 직업 등)를 제공할 거야. 너는 인물 정보를 기반으로 인물의 외적 이미지를 DALL-E 3에 적합한 영어 프롬프트를 생성해줘.\n\n내가 제공한 인물 정보에 외형 정보가 없으면 눈동자 색, 머리색, 머리스타일, 체형 등을 추가해줘.\n\n출력 예시 : \n# 인물이름 :\n- 프롬프트 : A....., long hair, green eyes...',
  '작업 6. 작업 4에서 생성한 모든 프롬프트의 상황은 최대한 유지하되 작업 5에서 만든 인물들의 프롬프트를 반영해서 다음의 예시를 참고해서 변환해줘.\n\n각 인물 프롬프트에 있는 피부, 머리 색, 머리 스타일, 눈 ,코, 입 등의 외적인 특징과 같은 내용은 꼭 반영해서 변환해줘.\n\n모든 프롬프트에 등장하는 모든 인물들의 프롬프트를 작업 5에서 만든 인물 프롬프트를 다음의 예시처럼 변환해줘야해.\n\n변환 예시 :\n인물 프롬프트 예시 :\n- 인물 A의 프롬프트 : 10 years old, A has long hair, green eyes...\n- 인물 B의 프롬프트 : 32 years old, B has short hair, red eyes...\n\n프롬프트 변환 예시:\n- 변환 전 장면 프롬프트 : A and B has met before...\n- 변환 후 장면 프롬프트 : A, 10 years old, has long hair and green eyes and B, 32 years old, has short hair and red eyes has met before...\n\n출력 예시:\n- 프롬프트 : 프롬프트 내용\n\n- ...']
@@ -172,7 +172,7 @@ def dalle3(prompt):
     return response
 
 def create_image(image_path, scene_prompts, n=4,index = 0, max_requests=max_requests):
-    last_idx = 0
+    last_idx = -1
     i = index
     bad_request = 1
     start_idx = 0
@@ -186,20 +186,21 @@ def create_image(image_path, scene_prompts, n=4,index = 0, max_requests=max_requ
                 img = url_to_image(response.dict()['data'][0]['url'])
                 cv2.imwrite(f'{image_path}/{i:02d}-{j:02d}.png',img)
                 image_list.append(f'{image_path}/{i:02d}-{j:02d}.png')
-                bad_request=0
+                bad_request = 0
                 start_idx = j+1
+            start_idx = 0
+            i += 1 
         except openai.BadRequestError as e: # 정책 위반 오류 등을 감지
             if (last_idx!=i):
                 bad_request = 1
                 last_idx = i
             else : 
                 bad_request = bad_request + 1
-            print(f"Badrequest(인덱스, 회수):{i}, {bad_request}")
+            print(f"Badrequest(인덱스, 시도 회수):{i}, {bad_request}")
             if (bad_request>=max_requests):# max_requests회이상 이미지 생성 제한이되면 생성 종료
                 return False
             else:    
                 continue
-        i += 1 
     return image_list
 
 def edit_image(image_path,character_prompt,input_prompt,edit, max_requests = max_requests):

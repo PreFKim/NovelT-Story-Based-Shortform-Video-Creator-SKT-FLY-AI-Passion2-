@@ -1,9 +1,9 @@
-import glob, cv2, random, tqdm, src, moviepy, os
+import glob, cv2, random, tqdm, src_video, moviepy, os
 import numpy as np
 from moviepy.editor import AudioFileClip, concatenate_videoclips, ImageSequenceClip, concatenate_audioclips, CompositeAudioClip
 
 
-def identity(video:src.Video):
+def identity(video:src_video.Video):
     return video
 
 vfx_name = [
@@ -14,32 +14,34 @@ vfx_name = [
     "줌 아웃",
     "눈 깜빡임 효과",
     "갈라짐 효과",
+    "떨림 효과",
     "배경 없이 나레이션만"
 ]
 
-narr_idx = 7
+narr_idx = 8
 
 vfx = [
     identity,
-    src.effect.Fade_in(0,60),
-    src.effect.Fade_out(-60),
-    src.effect.Zoom_in(0),
-    src.effect.Zoom_out(0),
-    src.effect.Blink(0,60),
-    src.effect.Crack(60),
+    src_video.effect.Fade_in(0,60),
+    src_video.effect.Fade_out(-60),
+    src_video.effect.Zoom_in(0),
+    src_video.effect.Zoom_out(0),
+    src_video.effect.Blink(0,60),
+    src_video.effect.Crack(60),
+    src_video.effect.Shake(60,120),
     identity
 ]
 
-def apply_subtitle(video:src.Video, vfx:int, subtitle:list,audio_frames:list):
+def apply_subtitle(video:src_video.Video, vfx:int, subtitle:list,audio_frames:list):
     start_frame = 0
     ret = video
     
     for i in range(len(subtitle)):
         if subtitle[i] != "":
             if vfx == narr_idx:
-                ret = src.effect.Narration(subtitle[i],start_frame=start_frame,end_frame=start_frame+audio_frames[i])(ret)
+                ret = src_video.effect.Narration(subtitle[i],start_frame=start_frame,end_frame=start_frame+audio_frames[i])(ret)
             else:
-                ret = src.effect.Subtitle(subtitle[i],start_frame=start_frame,end_frame=start_frame+audio_frames[i],color=(255,255,255),bg_color=(0,0,0))(ret)
+                ret = src_video.effect.Subtitle(subtitle[i],start_frame=start_frame,end_frame=start_frame+audio_frames[i],color=(255,255,255),bg_color=(0,0,0))(ret)
         start_frame = start_frame + audio_frames[i]
     return ret
 
@@ -79,7 +81,7 @@ def create_video(images,audio,subtitle,effects,bgm_path,save_path,last_narr=True
 
     # 장면 전환
     transition_frames = [20,20]
-    transition_lst = [src.transition.Slide,src.transition.Blending]
+    transition_lst = [src_video.transition.Slide,src_video.transition.Blending]
     transition = []
     for i in range(1,len(imgs)):
         idx = random.randint(0,len(transition_lst)-1)
@@ -104,10 +106,10 @@ def create_video(images,audio,subtitle,effects,bgm_path,save_path,last_narr=True
     print("이미지 수 :",len(imgs),", 나레이션 수 :",len(audios)," 효과 수 :",len(vfx_idx))
 
     # 장면별 영상 효과, 자막 적용
-    videos = [apply_subtitle(vfx[vfx_idx[0]](src.im2vid(imgs[0],sum(audio_frames[0]))),vfx_idx[0],subtitle[0],audio_frames[0])]
+    videos = [apply_subtitle(vfx[vfx_idx[0]](src_video.im2vid(imgs[0],sum(audio_frames[0]))),vfx_idx[0],subtitle[0],audio_frames[0])]
     for i in tqdm.tqdm(range(1,len(imgs))):
         x1 = videos[-1]
-        x2 = apply_subtitle(vfx[vfx_idx[i]](src.im2vid(imgs[i],sum(audio_frames[i]))),vfx_idx[i],subtitle[i],audio_frames[i])
+        x2 = apply_subtitle(vfx[vfx_idx[i]](src_video.im2vid(imgs[i],sum(audio_frames[i]))),vfx_idx[i],subtitle[i],audio_frames[i])
         videos.append(transition[i-1](x1,x2))
         videos.append(x2)
 
