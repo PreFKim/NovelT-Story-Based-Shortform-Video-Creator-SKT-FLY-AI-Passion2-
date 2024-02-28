@@ -60,8 +60,8 @@ def create_video(images,audio,subtitle,effects,bgm_path,save_path,last_narr=True
 
     audio_frames = [] # 오디오별 프레임 길이
 
-    for p in images:
-        imgs.append(cv2.cvtColor(cv2.imread(p),cv2.COLOR_BGR2RGB))
+    for image_path in images:
+        imgs.append(cv2.cvtColor(cv2.imread(image_path),cv2.COLOR_BGR2RGB))
     bgm = AudioFileClip(bgm_path)
 
     

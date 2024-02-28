@@ -1,8 +1,7 @@
-from config import *
 import urllib
 import tqdm
-
-from gpt import match_voice_actor
+from .config import *
+from .gpt import match_voice_actor
 
 speaker_param = {
     "nyejin" : [0,-2,0,0],
