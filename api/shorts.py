@@ -1,4 +1,4 @@
-import glob, cv2, random, tqdm, src_video, moviepy, os
+import cv2, random, tqdm, src_video
 import numpy as np
 from moviepy.editor import AudioFileClip, concatenate_videoclips, ImageSequenceClip, concatenate_audioclips, CompositeAudioClip
 
