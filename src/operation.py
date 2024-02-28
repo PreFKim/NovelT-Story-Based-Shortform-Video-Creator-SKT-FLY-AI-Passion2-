@@ -18,9 +18,7 @@ def read_video(path:str):
         video.append(frame)
     cap.release()
     return Video(video=video,fps=fps)
-
-def save(video:Video,path:str):
-    return video.save(path)
+    
 
 def put_text(video:Video,text:str,start_frame:int=0,end_frame:int=None,fontsize=12,color:tuple=(0,0,0),center_xy:tuple=None,bg_color:tuple=None):
     ret = video
@@ -58,9 +56,15 @@ def set_fps(video:Video,fps:float=60):
     ret.set_fps(fps)
     return ret
 
+
 def full(shape,num_frames:int,color:tuple=(0,0,0),fps:float=60):
     h,w = shape
     return Video(video=[np.full((h,w,3),color,dtype=np.uint8) for _ in range(num_frames)],fps=fps)
+
+def crop(video:Video,xyxy:tuple):
+    ret = video.copy()
+    ret.crop(xyxy)
+    return ret
 
 def pad(video:Video,shape,color:tuple=(0,0,0),xy:tuple=None):
     ret = video.copy()

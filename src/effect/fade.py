@@ -17,9 +17,14 @@ class Fade_in(Effect):
         X, Y = np.meshgrid(x, y)
 
         ratio = (3/(end_frame-start_frame))*2
-        for i in range(len(video)):
-            video.video[i] = (video.video[i]*np.reshape(gaussian(X, Y, 0, 0, i*ratio, i*ratio),(h,w,1))).astype(np.uint8)
-        
+
+        for i in range(start_frame):
+            video.video[i] = (video.video[i]*np.reshape(gaussian(X, Y, 0, 0, 0, 0),(h,w,1))).astype(np.uint8)
+            
+        for i in range(start_frame,end_frame):
+            video.video[i] = (video.video[i]*np.reshape(gaussian(X, Y, 0, 0, (i-start_frame)*ratio, (i-start_frame)*ratio),(h,w,1))).astype(np.uint8)
+
+
         return video
 
 class Fade_out(Effect):
@@ -34,8 +39,11 @@ class Fade_out(Effect):
         X, Y = np.meshgrid(x, y)
 
         ratio = (3/(end_frame-start_frame))*2
-        for i in reversed(range(len(video))):
-            video.video[-(i+1)] = (video.video[-(i+1)]*np.reshape(gaussian(X, Y, 0, 0, i*ratio, i*ratio),(h,w,1))).astype(np.uint8)
+        for i in reversed(range(start_frame,end_frame)):
+            video.video[-(i+1)] = (video.video[-(i+1)]*np.reshape(gaussian(X, Y, 0, 0, (i-start_frame)*ratio, (i-start_frame)*ratio),(h,w,1))).astype(np.uint8)
+
+        for i in range(end_frame,len(video)):
+            video.video[i] = video.video[end_frame-1].copy()
         
         return video
 

@@ -91,6 +91,12 @@ class Video:
         self.shape = self.video[0].shape[:2]
         return self
     
+    def crop(self,xyxy:tuple):
+        x1,y1,x2,y2 = xyxy
+        for i in range(len(self.video)):
+            self.video[i]=self.video[i][y1:y2,x1:x2]
+        return self
+    
     def pad(self,shape,color:tuple=(0,0,0),xy:tuple=None):
         h, w = shape
         ret = [np.full((h,w,3),color,dtype=np.uint8) for _ in range(len(self))]
@@ -106,6 +112,7 @@ class Video:
         self.shape = shape
 
         return self
+
     
     def set_fps(self,fps:float):
         video = []

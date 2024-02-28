@@ -16,10 +16,10 @@ class Blink(Effect):
 
         duration = end_frame-start_frame
         ratio = (1/duration)*2
-        for i in range(duration//3): # 눈뜨기
-            video.video[i] = (video.video[i]*np.reshape(gaussian(X, Y, 0, 0, 3, i*ratio),(h,w,1))).astype(np.uint8)
+        for i in range(start_frame,start_frame+duration//3): # 눈뜨기
+            video.video[i] = (video.video[i]*np.reshape(gaussian(X, Y, 0, 0, 3, (i-start_frame)*ratio),(h,w,1))).astype(np.uint8)
 
-        for i in range(duration//3,duration): # 감았다 뜨기
-            video.video[i] = (video.video[i]*np.reshape(gaussian(X, Y, 0, 0, 3, duration//3 * ratio - 3 * (i-duration//3) * ratio),(h,w,1))).astype(np.uint8)
+        for i in range(start_frame+duration//3,start_frame+duration): # 감았다 뜨기
+            video.video[i] = (video.video[i]*np.reshape(gaussian(X, Y, 0, 0, 3, duration//3 * ratio - 3 * (i-start_frame-duration//3) * ratio),(h,w,1))).astype(np.uint8)
         
         return video
