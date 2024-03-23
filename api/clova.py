@@ -14,17 +14,17 @@ speaker_param = {
     "nara" : [0,-2,0,0]
 }
 
-def create_voice(audio_path, subtitle, character_prompt):
+def create_voice(audio_path:str, subtitles:list, character_prompts:dict):
     audio_path_list = []
     idx = 0
-    speakers = match_voice_actor(subtitle,character_prompt)
+    speakers, usage = match_voice_actor(subtitles=subtitles, character_prompts=character_prompts)
 
     print(speakers)
-    for i in tqdm.tqdm(range(len(subtitle))):
-        for j in range(len(subtitle[i])):
-            if (subtitle[i][j] != ""):
+    for i in tqdm.tqdm(range(len(subtitles))):
+        for j in range(len(subtitles[i])):
+            if (subtitles[i][j] != ""):
                 volume,speed,pitch,alpha = speaker_param[speakers[idx]]
-                data = f"speaker={speakers[idx]}&volume={volume}&speed={speed}&pitch={pitch}&alpha={alpha}&format=mp3&text={urllib.parse.quote(subtitle[i][j])}"
+                data = f"speaker={speakers[idx]}&volume={volume}&speed={speed}&pitch={pitch}&alpha={alpha}&format=mp3&text={urllib.parse.quote(subtitles[i][j])}"
     
                 request = urllib.request.Request("https://naveropenapi.apigw.ntruss.com/tts-premium/v1/tts")
                 request.add_header("X-NCP-APIGW-API-KEY-ID",client_id)
@@ -41,4 +41,4 @@ def create_voice(audio_path, subtitle, character_prompt):
                     return False
                 idx += 1
                 
-    return audio_path_list
+    return audio_path_list, usage

@@ -52,7 +52,7 @@ def floor(lst:list):
     return lst
 
 
-def create_video(images,audio,subtitle,effects,bgm_path,save_path,last_narr=True,bgm_volume=1.0):
+def create_video(save_path:str,image_path_list:list,audio_path_list:str,subtitles:list,effects:list,bgm_path:str,bgm_volume:float=1.0,outro:bool=True):
     fps = 60 # 영상 프레임
 
     imgs = [] # 이미지 모음
@@ -60,20 +60,17 @@ def create_video(images,audio,subtitle,effects,bgm_path,save_path,last_narr=True
 
     audio_frames = [] # 오디오별 프레임 길이
 
-    for image_path in images:
+    for image_path in image_path_list:
         imgs.append(cv2.cvtColor(cv2.imread(image_path),cv2.COLOR_BGR2RGB))
     bgm = AudioFileClip(bgm_path)
 
-    
-    for img in imgs:
-        print(img.shape)
     # 오디오 길이 추출
     idx = 0 
-    for i in range(len(subtitle)):
+    for i in range(len(subtitles)):
         audios.append([])
         audio_frames.append([])
-        for j in range(len(subtitle[i])):
-            audios[i].append(AudioFileClip(audio[idx]))
+        for j in range(len(subtitles[i])):
+            audios[i].append(AudioFileClip(audio_path_list[idx]))
             audio_frames[i].append(audios[i][j].duration*fps)
             idx = idx + 1
     audio_frames = floor(audio_frames)
@@ -98,7 +95,7 @@ def create_video(images,audio,subtitle,effects,bgm_path,save_path,last_narr=True
                 vfx_idx.append(random.randint(1,4))
 
     # 마지막 나레이션 영상 효과 (더 자세한 내용은 '~~' 에서!)
-    if last_narr:
+    if outro:
         imgs.append(np.zeros_like(imgs[-1],dtype=np.uint8))
         transition.append(transition_lst[1](transition_frames[1]))
         vfx_idx.append(narr_idx)
@@ -106,10 +103,10 @@ def create_video(images,audio,subtitle,effects,bgm_path,save_path,last_narr=True
     print("이미지 수 :",len(imgs),", 나레이션 수 :",len(audios)," 효과 수 :",len(vfx_idx))
 
     # 장면별 영상 효과, 자막 적용
-    videos = [apply_subtitle(vfx[vfx_idx[0]](src_video.im2vid(imgs[0],sum(audio_frames[0]))),vfx_idx[0],subtitle[0],audio_frames[0])]
+    videos = [apply_subtitle(vfx[vfx_idx[0]](src_video.im2vid(imgs[0],sum(audio_frames[0]))),vfx_idx[0],subtitles[0],audio_frames[0])]
     for i in tqdm.tqdm(range(1,len(imgs))):
         x1 = videos[-1]
-        x2 = apply_subtitle(vfx[vfx_idx[i]](src_video.im2vid(imgs[i],sum(audio_frames[i]))),vfx_idx[i],subtitle[i],audio_frames[i])
+        x2 = apply_subtitle(vfx[vfx_idx[i]](src_video.im2vid(imgs[i],sum(audio_frames[i]))),vfx_idx[i],subtitles[i],audio_frames[i])
         videos.append(transition[i-1](x1,x2))
         videos.append(x2)
 
@@ -117,7 +114,6 @@ def create_video(images,audio,subtitle,effects,bgm_path,save_path,last_narr=True
     video_lst = []
     for i in tqdm.tqdm(range(len(videos))):
         vid = ImageSequenceClip(videos[i].video, fps=fps)
-
         if i%2 == 0:
             video_lst.append(vid.set_audio(concatenate_audioclips(audios[i//2])))
         else :
@@ -127,6 +123,6 @@ def create_video(images,audio,subtitle,effects,bgm_path,save_path,last_narr=True
     new_audio = CompositeAudioClip([video_clip.audio,bgm.audio_loop(duration=video_clip.duration).volumex(bgm_volume)])
     video_clip.audio = new_audio
 
-
     # 비디오를 저장합니다.
     video_clip.write_videofile(save_path)
+
